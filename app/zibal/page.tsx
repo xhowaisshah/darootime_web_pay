@@ -7,7 +7,10 @@
       message: string;
       amount?: number;
       date?: string;
-      result?: any;
+      result?: {
+        result: number;
+        message?: string;
+      };
       error?: string;
     }
     
@@ -56,7 +59,7 @@
                 setError(data.message || 'An error occurred while verifying the payment.');
                 setResponse(null);
               }
-            } catch (err) {
+            } catch {
               setError('An error occurred while verifying the payment.');
               setResponse(null);
             }
