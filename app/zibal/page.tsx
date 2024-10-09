@@ -2,6 +2,7 @@
     import { useState, useEffect, useRef } from 'react';
     import { useSearchParams } from 'next/navigation';
     import { FiCheckCircle, FiXCircle } from 'react-icons/fi';
+    import { Suspense } from 'react';
     
     interface ResponseData {
       message: string;
@@ -14,7 +15,7 @@
       error?: string;
     }
     
-    export default function ZibalPage() {
+    function ZibalPageContent() {
       const [response, setResponse] = useState<ResponseData | null>(null);
       const [error, setError] = useState<string | null>(null);
       const searchParams = useSearchParams();
@@ -110,5 +111,13 @@
             </div>
           )}
         </div>
+      );
+    }
+    
+    export default function ZibalPage() {
+      return (
+        <Suspense fallback={<div>Loading...</div>}>
+          <ZibalPageContent />
+        </Suspense>
       );
     }
