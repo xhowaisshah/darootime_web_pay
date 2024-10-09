@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         merchant: 'zibal', // Replace with your actual merchant ID
         amount,
-        callbackUrl: `${req.headers.get('origin')}/zibal?userId=${userId}&documentId=${documentId}`,
+        callbackUrl: `${process.env.NEXTAUTH_URL}/zibal?userId=${userId}&documentId=${documentId}`,
       }),
     });
 
