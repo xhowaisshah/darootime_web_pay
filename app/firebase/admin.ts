@@ -1,22 +1,29 @@
-import { initializeApp, getApps, App, cert, ServiceAccount } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
-import serviceAccount from '../../daro-time-firebase-adminsdk-pzav5-426cabcda8.json';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
-// Initialize Firebase Admin only once
-let adminApp: App;
+// Firebase client configuration
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
+
+// Initialize Firebase only once
+let firebaseApp: FirebaseApp;
 
 if (!getApps().length) {
-  adminApp = initializeApp({
-    credential: cert(serviceAccount as ServiceAccount),
-    databaseURL: process.env.FIREBASE_ADMIN_DATABASE_URL,
-  });
+  firebaseApp = initializeApp(firebaseConfig);
 } else {
-  adminApp = getApps()[0];
+  firebaseApp = getApps()[0];
 }
 
 // Initialize Firestore and Auth services
-const adminFirestore = getFirestore(adminApp);
-const adminAuth = getAuth(adminApp);
+const firestore = getFirestore(firebaseApp);
+const auth = getAuth(firebaseApp);
 
-export { adminApp, adminFirestore, adminAuth };
+
+export { firebaseApp, firestore, auth };

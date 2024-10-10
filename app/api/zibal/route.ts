@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminFirestore } from '../../firebase/admin'; // Adjust the path as needed
-import { FieldValue } from 'firebase-admin/firestore'; // Import FieldValue from firebase-admin
+import { getFirestore, doc, getDoc, updateDoc, collection, serverTimestamp } from 'firebase/firestore'; // Import Firestore functions
+import { firebaseApp } from '../../firebase/admin'; // Import the initialized Firebase app
 
 export const POST = async (req: NextRequest) => {
   const { trackId, status, documentId, userId } = await req.json();
@@ -31,21 +31,22 @@ export const POST = async (req: NextRequest) => {
       const paymentDate = responseData.paidAt;
 
       // Update the Firestore document's status to 'Success'
-      const docRef = adminFirestore.collection('PaymentRequests').doc(documentId);
-      const doc = await docRef.get();
+      const db = getFirestore(firebaseApp);
+      const docRef = doc(collection(db, 'PaymentRequests'), documentId);
+      const docSnap = await getDoc(docRef);
 
-      if (!doc.exists) {
+      if (!docSnap.exists()) {
         return NextResponse.json({
           message: 'Document not found',
           error: 'No document to update'
         }, { status: 404 });
       }
 
-      await docRef.update({
+      await updateDoc(docRef, {
         status: 'Success',
         amount: paymentAmount,
         date: new Date(paymentDate),
-        updatedAt: FieldValue.serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
 
       return NextResponse.json({
@@ -65,20 +66,21 @@ export const POST = async (req: NextRequest) => {
       console.log('Payment verification failed', responseData);
 
       // Update the Firestore document's status to 'Cancelled'
-      const docRef = adminFirestore.collection('PaymentRequests').doc(documentId);
-      const doc = await docRef.get();
+      const db = getFirestore(firebaseApp);
+      const docRef = doc(collection(db, 'PaymentRequests'), documentId);
+      const docSnap = await getDoc(docRef);
 
-      if (!doc.exists) {
+      if (!docSnap.exists()) {
         return NextResponse.json({
           message: 'Document not found',
           error: 'No document to update'
         }, { status: 404 });
       }
 
-      await docRef.update({
+      await updateDoc(docRef, {
         status: 'Cancelled',
         error: responseData.message,
-        updatedAt: FieldValue.serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
 
       return NextResponse.json({
@@ -91,7 +93,7 @@ export const POST = async (req: NextRequest) => {
     console.error('Error verifying payment:', error);
     return NextResponse.json({
       message: 'Internal Server Error',
-      error: 'Unable to verify payment at this time.'
+      error: `Error verifying payment: ${error}`
     }, { status: 500 });
   }
 };
